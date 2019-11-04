@@ -45,6 +45,16 @@ public class AccountStore extends TronStoreWithRevoking<AccountCapsule> {
   }
 
   @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
+
+  @Override
   public void put(byte[] key, AccountCapsule item) {
     super.put(key, item);
     accountStateCallBackUtils.accountCallBack(key, item);

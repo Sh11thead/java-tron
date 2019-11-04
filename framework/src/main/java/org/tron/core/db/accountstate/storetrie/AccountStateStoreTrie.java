@@ -62,6 +62,16 @@ public class AccountStateStoreTrie extends TronStoreWithRevoking<BytesCapsule> i
   }
 
   @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
+
+  @Override
   public void put(byte[] key, BytesCapsule item) {
     super.put(key, item);
   }

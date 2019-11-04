@@ -32,4 +32,8 @@ public interface ITronChainBase<T> extends Iterable<Entry<byte[], T>>, Quitable 
 
   String getDbName();
 
+  String getOutputDirectoryByDbName();
+
+  String getIndexDirectory();
+
 }

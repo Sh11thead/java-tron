@@ -39,6 +39,16 @@ public class CheckTmpStore extends TronDatabase<byte[]> {
   }
 
   @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
+
+  @Override
   public void forEach(Consumer action) {
 
   }

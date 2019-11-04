@@ -43,4 +43,14 @@ public class BlockIndexStore extends TronStoreWithRevoking<BytesCapsule> {
     }
     return new BytesCapsule(value);
   }
+
+  @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
 }

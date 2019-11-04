@@ -22,6 +22,16 @@ public class CodeStore extends TronStoreWithRevoking<CodeCapsule> {
     return getUnchecked(key);
   }
 
+  @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
+
   public long getTotalCodes() {
     return Streams.stream(revokingDB.iterator()).count();
   }

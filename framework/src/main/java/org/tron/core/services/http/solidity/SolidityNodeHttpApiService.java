@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.tron.common.application.Service;
 import org.tron.core.config.args.Args;
+import org.tron.core.db.index.IndexHelper;
 import org.tron.core.services.http.FullNodeHttpApiService;
 import org.tron.core.services.http.GetAccountByIdServlet;
 import org.tron.core.services.http.GetAccountServlet;
@@ -109,6 +110,14 @@ public class SolidityNodeHttpApiService implements Service {
   @Autowired
   private TriggerConstantContractServlet triggerConstantContractServlet;
 
+  @Autowired
+  private GetTransactionsFromThisServlet getTransactionsFromThisServlet;
+  @Autowired
+  private GetTransactionsToThisServlet getTransactionsToThisServlet;
+
+  @Autowired(required = false)
+  protected IndexHelper indexHelper;
+
   @Override
   public void init() {
   }
@@ -190,6 +199,15 @@ public class SolidityNodeHttpApiService implements Service {
       int maxHttpConnectNumber = Args.getInstance().getMaxHttpConnectNumber();
       if (maxHttpConnectNumber > 0) {
         server.addBean(new ConnectionLimit(maxHttpConnectNumber, server));
+      }
+
+      // for extension api
+      if (args.isWalletExtensionApi()) {
+        context.addServlet(new ServletHolder(getTransactionsFromThisServlet),
+            "/walletextension/gettransactionsfromthis");
+        context
+            .addServlet(new ServletHolder(getTransactionsToThisServlet),
+                "/walletextension/gettransactionstothis");
       }
 
       server.start();

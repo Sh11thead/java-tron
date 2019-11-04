@@ -66,4 +66,14 @@ public class BlockStore extends TronStoreWithRevoking<BlockCapsule> {
         .sorted(Comparator.comparing(BlockCapsule::getNum))
         .collect(Collectors.toList());
   }
+
+  @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
 }

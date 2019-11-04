@@ -24,11 +24,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.tron.common.storage.WriteOptionsWrapper;
 import org.tron.common.utils.DBConfig;
 import org.tron.core.db.RevokingDatabase;
+import org.tron.core.db.common.WrappedByteArray;
 import org.tron.core.db2.common.DB;
 import org.tron.core.db2.common.IRevokingDB;
 import org.tron.core.db2.common.Key;
 import org.tron.core.db2.common.Value;
-import org.tron.core.db2.common.WrappedByteArray;
 import org.tron.core.exception.RevokingStoreIllegalStateException;
 import org.tron.core.store.CheckTmpStore;
 

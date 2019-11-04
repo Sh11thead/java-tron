@@ -28,6 +28,16 @@ public class AssetIssueStore extends TronStoreWithRevoking<AssetIssueCapsule> {
     return super.getUnchecked(key);
   }
 
+  @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
+
   /**
    * get all asset issues.
    */

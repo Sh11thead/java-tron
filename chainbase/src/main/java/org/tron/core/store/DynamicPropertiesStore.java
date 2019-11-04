@@ -1777,6 +1777,16 @@ public class DynamicPropertiesStore extends TronStoreWithRevoking<BytesCapsule> 
     return getChangeDelegation() == 1;
   }
 
+  @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
+
   private static class DynamicResourceProperties {
 
     private static final byte[] ONE_DAY_NET_LIMIT = "ONE_DAY_NET_LIMIT".getBytes();

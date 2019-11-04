@@ -25,6 +25,16 @@ public class ProposalStore extends TronStoreWithRevoking<ProposalCapsule> {
     return new ProposalCapsule(value);
   }
 
+  @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
+
   /**
    * get all proposals.
    */

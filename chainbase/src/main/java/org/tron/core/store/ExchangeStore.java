@@ -25,6 +25,16 @@ public class ExchangeStore extends TronStoreWithRevoking<ExchangeCapsule> {
     return new ExchangeCapsule(value);
   }
 
+  @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
+
   /**
    * get all exchanges.
    */

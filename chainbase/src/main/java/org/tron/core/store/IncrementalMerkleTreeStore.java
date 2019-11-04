@@ -24,6 +24,16 @@ public class IncrementalMerkleTreeStore
     return ArrayUtils.isEmpty(value) ? null : new IncrementalMerkleTreeCapsule(value);
   }
 
+  @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
+
   public boolean contain(byte[] key) {
     byte[] value = revokingDB.getUnchecked(key);
     return !ArrayUtils.isEmpty(value);

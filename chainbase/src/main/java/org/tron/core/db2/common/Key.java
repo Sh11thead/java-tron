@@ -2,6 +2,7 @@ package org.tron.core.db2.common;
 
 import java.util.Arrays;
 import lombok.EqualsAndHashCode;
+import org.tron.core.db.common.WrappedByteArray;
 
 @EqualsAndHashCode
 public final class Key {

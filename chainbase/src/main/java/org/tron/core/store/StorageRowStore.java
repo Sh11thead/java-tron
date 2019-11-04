@@ -22,4 +22,14 @@ public class StorageRowStore extends TronStoreWithRevoking<StorageRowCapsule> {
     row.setRowKey(key);
     return row;
   }
+
+  @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
 }

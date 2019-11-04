@@ -7,6 +7,7 @@ import lombok.Getter;
 import org.tron.common.storage.WriteOptionsWrapper;
 import org.tron.common.storage.leveldb.LevelDbDataSourceImpl;
 import org.tron.common.utils.DBConfig;
+import org.tron.core.db.common.WrappedByteArray;
 import org.tron.core.db.common.iterator.DBIterator;
 
 public class LevelDB implements DB<byte[], byte[]>, Flusher {

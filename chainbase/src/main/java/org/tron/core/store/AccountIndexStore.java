@@ -45,4 +45,14 @@ public class AccountIndexStore extends TronStoreWithRevoking<BytesCapsule> {
     byte[] value = revokingDB.getUnchecked(key);
     return !ArrayUtils.isEmpty(value);
   }
+
+  @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
 }

@@ -45,6 +45,7 @@ dependencies {
     compile project(":protocol")
     compile project(":common")
     compile 'org.reflections:reflections:0.9.11'
+    compile 'com.googlecode.cqengine:cqengine:2.12.4'
 }
 
 

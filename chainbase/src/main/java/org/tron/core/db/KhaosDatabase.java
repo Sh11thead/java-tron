@@ -57,6 +57,16 @@ public class KhaosDatabase extends TronDatabase {
     return false;
   }
 
+  @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
+
   void start(BlockCapsule blk) {
     this.head = new KhaosBlock(blk);
     miniStore.insert(this.head);

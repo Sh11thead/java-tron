@@ -10,10 +10,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import lombok.Getter;
+import org.tron.core.db.common.WrappedByteArray;
 import org.tron.core.db2.common.HashDB;
 import org.tron.core.db2.common.Key;
 import org.tron.core.db2.common.Value;
-import org.tron.core.db2.common.WrappedByteArray;
 
 public class SnapshotImpl extends AbstractSnapshot<Key, Value> {
 

@@ -33,6 +33,16 @@ public class TransactionRetStore extends TronStoreWithRevoking<TransactionRetCap
     }
   }
 
+  @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
+
   public TransactionInfoCapsule getTransactionInfo(byte[] key) throws BadItemException {
     long blockNumber = transactionStore.getBlockNumber(key);
     if (blockNumber == -1) {

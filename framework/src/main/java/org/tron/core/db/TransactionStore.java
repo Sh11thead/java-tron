@@ -102,6 +102,16 @@ public class TransactionStore extends TronStoreWithRevoking<TransactionCapsule> 
     }
   }
 
+  @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
+
   /**
    * get total transaction.
    */

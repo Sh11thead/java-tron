@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.Getter;
+import org.tron.core.db.common.WrappedByteArray;
 import org.tron.core.db2.common.DB;
 import org.tron.core.db2.common.Flusher;
-import org.tron.core.db2.common.WrappedByteArray;
 
 public class SnapshotRoot extends AbstractSnapshot<byte[], byte[]> {
 

@@ -25,6 +25,16 @@ public class DelegatedResourceStore extends TronStoreWithRevoking<DelegatedResou
     return ArrayUtils.isEmpty(value) ? null : new DelegatedResourceCapsule(value);
   }
 
+  @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
+
   @Deprecated
   public List<DelegatedResourceCapsule> getByFrom(byte[] key) {
     return revokingDB.getValuesNext(key, Long.MAX_VALUE).stream()

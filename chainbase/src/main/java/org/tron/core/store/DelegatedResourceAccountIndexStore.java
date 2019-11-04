@@ -23,4 +23,14 @@ public class DelegatedResourceAccountIndexStore extends
     return ArrayUtils.isEmpty(value) ? null : new DelegatedResourceAccountIndexCapsule(value);
   }
 
+  @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
+
 }

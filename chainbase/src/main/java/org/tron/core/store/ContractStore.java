@@ -24,6 +24,16 @@ public class ContractStore extends TronStoreWithRevoking<ContractCapsule> {
     return getUnchecked(key);
   }
 
+  @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
+
   /**
    * get total transaction.
    */

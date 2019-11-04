@@ -34,4 +34,14 @@ public class NullifierStore extends TronStoreWithRevoking<BytesCapsule> {
 
     return !ArrayUtils.isEmpty(value);
   }
+
+  @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
 }

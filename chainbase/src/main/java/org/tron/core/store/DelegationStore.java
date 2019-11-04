@@ -27,6 +27,16 @@ public class DelegationStore extends TronStoreWithRevoking<BytesCapsule> {
     return ArrayUtils.isEmpty(value) ? null : new BytesCapsule(value);
   }
 
+  @Override
+  public String getOutputDirectoryByDbName() {
+    return null;
+  }
+
+  @Override
+  public String getIndexDirectory() {
+    return null;
+  }
+
   public void addReward(long cycle, byte[] address, long value) {
     byte[] key = buildRewardKey(cycle, address);
     BytesCapsule bytesCapsule = get(key);
