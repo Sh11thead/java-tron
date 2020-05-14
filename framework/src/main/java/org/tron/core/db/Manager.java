@@ -3,6 +3,7 @@ package org.tron.core.db;
 import static org.tron.core.config.Parameter.NodeConstant.MAX_TRANSACTION_PENDING;
 import static org.tron.core.config.args.Parameter.ChainConstant.BLOCK_PRODUCED_INTERVAL;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
@@ -16,10 +17,12 @@ import com.google.protobuf.ByteString;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -1138,6 +1141,10 @@ public class Manager {
           postSolidityTrigger(getDynamicPropertiesStore().getLatestSolidifiedBlockNum());
           // if event subscribe is enabled, post block trigger to queue
           postBlockTrigger(newBlock);
+
+
+          logger.info("parse ok!! size:{}",parseTransactionInfoFromBlock(newBlock).size());
+
         } catch (Throwable throwable) {
           logger.error(throwable.getMessage(), throwable);
           khaosDb.removeBlk(block.getBlockId());
@@ -1863,6 +1870,39 @@ public class Manager {
   private void prepareStoreFactory() {
     StoreFactory.init();
     StoreFactory.getInstance().setChainBaseManager(chainBaseManager);
+  }
+
+  private List<TransactionInfo> parseTransactionInfoFromBlock(BlockCapsule blockCapsule){
+    List<TransactionInfo> ret = new ArrayList<>();
+    Map<ByteString,TransactionInfo> retMap = new HashMap<>();
+    TransactionRetCapsule retCapsule = null;
+    try {
+      retCapsule = transactionRetStore.getTransactionInfoByBlockNum(ByteArray.fromLong(blockCapsule.getNum()));
+      if(retCapsule != null){
+        for (TransactionInfo transactionResultInfo : retCapsule.getInstance().getTransactioninfoList()) {
+          ret.add(transactionResultInfo);
+          retMap.put(transactionResultInfo.getId(),transactionResultInfo);
+        }
+      }
+    } catch (BadItemException e) {
+      logger.error("TRC20Parser: block: {} parse error ",blockCapsule.getNum());
+    }
+    //front check: if ret.size == block inner tx size
+    if(blockCapsule.getTransactions().size() != ret.size()){
+      for(TransactionCapsule capsule:blockCapsule.getTransactions()){
+        if(retMap.get(capsule.getTransactionId().getByteString()) == null){
+          try {
+            TransactionInfoCapsule infoCapsule = transactionHistoryStore.get(capsule.getTransactionId().getBytes());
+            if(infoCapsule!=null){
+              ret.add(infoCapsule.getInstance());
+            }
+          } catch (BadItemException e) {
+            logger.error("TRC20Parser: txid: {} parse from transactionHistoryStore error ",capsule.getTransactionId());
+          }
+        }
+      }
+    }
+    return ret;
   }
 
   private static class ValidateSignTask implements Callable<Boolean> {

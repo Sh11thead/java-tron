@@ -15,6 +15,8 @@ public class Trigger {
   public static final String CONTRACTLOG_TRIGGER_NAME = "contractLogTrigger";
   public static final String CONTRACTEVENT_TRIGGER_NAME = "contractEventTrigger";
   public static final String SOLIDITY_TRIGGER_NAME = "solidityTrigger";
+  public static final String TRC20TRACKER_TRIGGER_NAME = "trc20TrackerTrigger";
+
   @Getter
   @Setter
   protected long timeStamp;
