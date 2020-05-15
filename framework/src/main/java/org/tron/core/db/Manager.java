@@ -58,6 +58,8 @@ import org.tron.common.logsfilter.trigger.ContractTrigger;
 import org.tron.common.overlay.discover.node.Node;
 import org.tron.common.overlay.message.Message;
 import org.tron.common.runtime.RuntimeImpl;
+import org.tron.common.runtime.vm.DataWord;
+import org.tron.common.runtime.vm.LogInfo;
 import org.tron.common.utils.ByteArray;
 import org.tron.common.utils.ForkController;
 import org.tron.common.utils.Pair;
@@ -143,6 +145,7 @@ import org.tron.protos.Protocol.AccountType;
 import org.tron.protos.Protocol.Transaction;
 import org.tron.protos.Protocol.Transaction.Contract;
 import org.tron.protos.Protocol.TransactionInfo;
+import org.tron.protos.Protocol.TransactionInfo.Log;
 
 
 @Slf4j(topic = "DB")
@@ -1795,6 +1798,19 @@ public class Manager {
 
   private void postTRC20Trigger(BlockCapsule blockCapsule, long latestSolidifiedBlockNumber) {
     TRC20TrackerCapsule trc20TrackerCapsule = new TRC20TrackerCapsule(blockCapsule);
+    try {
+      BlockCapsule solidBlock = getBlockByNum(latestSolidifiedBlockNumber);
+      List<LogInfo> find = getLogInfoList(parseTransactionInfoFromBlockDB(solidBlock));
+      if (find.size() > 0) {
+        logger.info("find:{}", find);
+      }
+
+    } catch (ItemNotFoundException e) {
+      e.printStackTrace();
+    } catch (BadItemException e) {
+      e.printStackTrace();
+    }
+
     boolean result = triggerCapsuleQueue.offer(trc20TrackerCapsule);
     if (!result) {
       logger.info("too many trigger, lost solidified trigger, "
@@ -1882,6 +1898,23 @@ public class Manager {
   private void prepareStoreFactory() {
     StoreFactory.init();
     StoreFactory.getInstance().setChainBaseManager(chainBaseManager);
+  }
+
+  private List<LogInfo> getLogInfoList(List<TransactionInfo> transactionInfos) {
+    List<LogInfo> ret = new ArrayList<>();
+    for (TransactionInfo transactionInfo : transactionInfos) {
+      List<Log> logs = transactionInfo.getLogList();
+      for (Log l : logs) {
+        List<DataWord> topics = new ArrayList<>();
+        for (ByteString b : l.getTopicsList()) {
+          topics.add(new DataWord(b.toByteArray()));
+        }
+        LogInfo logInfo = new LogInfo(l.getAddress().toByteArray(), topics,
+            l.getData().toByteArray());
+        ret.add(logInfo);
+      }
+    }
+    return ret;
   }
 
   private List<TransactionInfo> parseTransactionInfoFromBlockDB(BlockCapsule blockCapsule) {
