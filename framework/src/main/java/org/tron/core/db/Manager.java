@@ -3,7 +3,6 @@ package org.tron.core.db;
 import static org.tron.core.config.Parameter.NodeConstant.MAX_TRANSACTION_PENDING;
 import static org.tron.core.config.args.Parameter.ChainConstant.BLOCK_PRODUCED_INTERVAL;
 
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
@@ -52,6 +51,7 @@ import org.tron.common.logsfilter.FilterQuery;
 import org.tron.common.logsfilter.capsule.BlockLogTriggerCapsule;
 import org.tron.common.logsfilter.capsule.ContractTriggerCapsule;
 import org.tron.common.logsfilter.capsule.SolidityTriggerCapsule;
+import org.tron.common.logsfilter.capsule.TRC20TrackerCapsule;
 import org.tron.common.logsfilter.capsule.TransactionLogTriggerCapsule;
 import org.tron.common.logsfilter.capsule.TriggerCapsule;
 import org.tron.common.logsfilter.trigger.ContractTrigger;
@@ -1142,8 +1142,8 @@ public class Manager {
           // if event subscribe is enabled, post block trigger to queue
           postBlockTrigger(newBlock);
 
+          postTRC20Trigger(newBlock, getDynamicPropertiesStore().getLatestSolidifiedBlockNum());
 
-          logger.info("parse ok!! size:{}",parseTransactionInfoFromBlock(newBlock).size());
 
         } catch (Throwable throwable) {
           logger.error(throwable.getMessage(), throwable);
@@ -1793,6 +1793,17 @@ public class Manager {
     }
   }
 
+  private void postTRC20Trigger(BlockCapsule blockCapsule, long latestSolidifiedBlockNumber) {
+    TRC20TrackerCapsule trc20TrackerCapsule = new TRC20TrackerCapsule(blockCapsule);
+    boolean result = triggerCapsuleQueue.offer(trc20TrackerCapsule);
+    if (!result) {
+      logger.info("too many trigger, lost solidified trigger, "
+          + "block number: {}", latestSolidifiedBlockNumber);
+    }
+
+  }
+
+
   private void postSolidityTrigger(final long latestSolidifiedBlockNumber) {
     if (eventPluginLoaded && EventPluginLoader.getInstance().isSolidityLogTriggerEnable()) {
       SolidityTriggerCapsule solidityTriggerCapsule
@@ -1804,6 +1815,7 @@ public class Manager {
       }
     }
   }
+
 
   private void postBlockTrigger(final BlockCapsule newBlock) {
     if (eventPluginLoaded && EventPluginLoader.getInstance().isBlockLogTriggerEnable()) {
@@ -1872,32 +1884,36 @@ public class Manager {
     StoreFactory.getInstance().setChainBaseManager(chainBaseManager);
   }
 
-  private List<TransactionInfo> parseTransactionInfoFromBlock(BlockCapsule blockCapsule){
+  private List<TransactionInfo> parseTransactionInfoFromBlockDB(BlockCapsule blockCapsule) {
     List<TransactionInfo> ret = new ArrayList<>();
-    Map<ByteString,TransactionInfo> retMap = new HashMap<>();
+    Map<ByteString, TransactionInfo> retMap = new HashMap<>();
     TransactionRetCapsule retCapsule = null;
     try {
-      retCapsule = transactionRetStore.getTransactionInfoByBlockNum(ByteArray.fromLong(blockCapsule.getNum()));
-      if(retCapsule != null){
-        for (TransactionInfo transactionResultInfo : retCapsule.getInstance().getTransactioninfoList()) {
+      retCapsule = transactionRetStore
+          .getTransactionInfoByBlockNum(ByteArray.fromLong(blockCapsule.getNum()));
+      if (retCapsule != null) {
+        for (TransactionInfo transactionResultInfo : retCapsule.getInstance()
+            .getTransactioninfoList()) {
           ret.add(transactionResultInfo);
-          retMap.put(transactionResultInfo.getId(),transactionResultInfo);
+          retMap.put(transactionResultInfo.getId(), transactionResultInfo);
         }
       }
     } catch (BadItemException e) {
-      logger.error("TRC20Parser: block: {} parse error ",blockCapsule.getNum());
+      logger.error("TRC20Parser: block: {} parse error ", blockCapsule.getNum());
     }
     //front check: if ret.size == block inner tx size
-    if(blockCapsule.getTransactions().size() != ret.size()){
-      for(TransactionCapsule capsule:blockCapsule.getTransactions()){
-        if(retMap.get(capsule.getTransactionId().getByteString()) == null){
+    if (blockCapsule.getTransactions().size() != ret.size()) {
+      for (TransactionCapsule capsule : blockCapsule.getTransactions()) {
+        if (retMap.get(capsule.getTransactionId().getByteString()) == null) {
           try {
-            TransactionInfoCapsule infoCapsule = transactionHistoryStore.get(capsule.getTransactionId().getBytes());
-            if(infoCapsule!=null){
+            TransactionInfoCapsule infoCapsule = transactionHistoryStore
+                .get(capsule.getTransactionId().getBytes());
+            if (infoCapsule != null) {
               ret.add(infoCapsule.getInstance());
             }
           } catch (BadItemException e) {
-            logger.error("TRC20Parser: txid: {} parse from transactionHistoryStore error ",capsule.getTransactionId());
+            logger.error("TRC20Parser: txid: {} parse from transactionHistoryStore error ",
+                capsule.getTransactionId());
           }
         }
       }
