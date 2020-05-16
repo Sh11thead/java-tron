@@ -16,7 +16,8 @@ public class TRC20TrackerTrigger extends Trigger {
     private String accountAddress;
     private String tokenAddress;
     private String balance;
-    private String increment_balance;
+    private String incrementBalance;
+    private String decimals;
   }
 
   public static enum ConcernTopics {

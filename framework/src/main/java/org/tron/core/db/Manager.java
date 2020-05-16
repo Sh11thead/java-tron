@@ -51,6 +51,7 @@ import org.tron.common.logsfilter.FilterQuery;
 import org.tron.common.logsfilter.capsule.BlockLogTriggerCapsule;
 import org.tron.common.logsfilter.capsule.ContractTriggerCapsule;
 import org.tron.common.logsfilter.capsule.SolidityTriggerCapsule;
+import org.tron.common.logsfilter.capsule.TRC20SolidityTrackerCapsule;
 import org.tron.common.logsfilter.capsule.TRC20TrackerCapsule;
 import org.tron.common.logsfilter.capsule.TransactionLogTriggerCapsule;
 import org.tron.common.logsfilter.capsule.TriggerCapsule;
@@ -1145,7 +1146,9 @@ public class Manager {
           // if event subscribe is enabled, post block trigger to queue
           postBlockTrigger(newBlock);
 
-          postTRC20Trigger(newBlock, getDynamicPropertiesStore().getLatestSolidifiedBlockNum());
+          postTRC20Trigger(newBlock);
+
+          postTRC20SolidityTrigger(getDynamicPropertiesStore().getLatestSolidifiedBlockNum());
 
 
         } catch (Throwable throwable) {
@@ -1796,25 +1799,35 @@ public class Manager {
     }
   }
 
-  private void postTRC20Trigger(BlockCapsule blockCapsule, long latestSolidifiedBlockNumber) {
+  private void postTRC20Trigger(BlockCapsule blockCapsule) {
     TRC20TrackerCapsule trc20TrackerCapsule = new TRC20TrackerCapsule(blockCapsule);
-    try {
-      BlockCapsule solidBlock = getBlockByNum(latestSolidifiedBlockNumber);
-      List<LogInfo> find = getLogInfoList(parseTransactionInfoFromBlockDB(solidBlock));
-      if (find.size() > 0) {
-        logger.info("find:{}", find);
-      }
-
-    } catch (ItemNotFoundException e) {
-      e.printStackTrace();
-    } catch (BadItemException e) {
-      e.printStackTrace();
-    }
-
     boolean result = triggerCapsuleQueue.offer(trc20TrackerCapsule);
     if (!result) {
       logger.info("too many trigger, lost solidified trigger, "
           + "block number: {}", latestSolidifiedBlockNumber);
+    }
+
+  }
+
+  private void postTRC20SolidityTrigger(long latestSolidifiedBlockNumber) {
+    try {
+      setMode(false);
+
+      BlockCapsule solidBlock = getBlockByNum(latestSolidifiedBlockNumber);
+      List<LogInfo> logInfos = getLogInfoList(parseTransactionInfoFromBlockDB(solidBlock));
+      TRC20SolidityTrackerCapsule trc20SolidityTrackerCapsule = new TRC20SolidityTrackerCapsule(
+          solidBlock, logInfos);
+      boolean result = triggerCapsuleQueue.offer(trc20SolidityTrackerCapsule);
+      if (!result) {
+        logger.info("too many trigger, lost solidified trigger, "
+            + "block number: {}", latestSolidifiedBlockNumber);
+      }
+    } catch (ItemNotFoundException e) {
+      e.printStackTrace();
+    } catch (BadItemException e) {
+      e.printStackTrace();
+    } finally {
+      setMode(true);
     }
 
   }

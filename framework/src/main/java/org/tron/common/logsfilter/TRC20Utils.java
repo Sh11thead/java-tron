@@ -3,6 +3,7 @@ package org.tron.common.logsfilter;
 import com.google.common.primitives.Bytes;
 import com.google.protobuf.ByteString;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -65,6 +66,8 @@ public class TRC20Utils {
 
   public static List<AssetStatusPojo> parseTrc20AssetStatusPojo(BlockCapsule block,
       List<LogInfo> logInfos) {
+    List<AssetStatusPojo> ret = new ArrayList<>();
+
     Set<String> tokenSet = new HashSet<>();
 
     Map<String, BigInteger> incrementMap = new LinkedHashMap<>();
@@ -108,8 +111,27 @@ public class TRC20Utils {
 
     logger.info("incrementMap: {}", incrementMap);
     logger.info("balanceMap: {}", balanceMap);
-    logger.info("decimalsMap: {}", balanceMap);
+    logger.info("decimalsMap: {}", decimalMap);
 
+    //
+    for (String keys : incrementMap.keySet()) {
+      String[] key = keys.split(",");
+      AssetStatusPojo assetStatusPojo = new AssetStatusPojo();
+      assetStatusPojo.setAccountAddress(key[0]);
+      assetStatusPojo.setIncrementBalance(bigIntegertoString(incrementMap.get(keys)));
+      assetStatusPojo.setBalance(bigIntegertoString(balanceMap.get(keys)));
+      assetStatusPojo.setDecimals(bigIntegertoString(decimalMap.get(key[1])));
+      ret.add(assetStatusPojo);
+    }
+
+    return ret;
+  }
+
+
+  private static String bigIntegertoString(BigInteger bigInteger) {
+    if (bigInteger != null) {
+      return bigInteger.toString();
+    }
     return null;
   }
 
