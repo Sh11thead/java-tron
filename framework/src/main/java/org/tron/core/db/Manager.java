@@ -48,6 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.tron.common.logsfilter.EventPluginLoader;
 import org.tron.common.logsfilter.FilterQuery;
+import org.tron.common.logsfilter.capsule.BlockErasedTriggerCapsule;
 import org.tron.common.logsfilter.capsule.BlockLogTriggerCapsule;
 import org.tron.common.logsfilter.capsule.ContractTriggerCapsule;
 import org.tron.common.logsfilter.capsule.SolidityTriggerCapsule;
@@ -969,7 +970,9 @@ public class Manager {
           .getLatestBlockHeaderHash()
           .equals(binaryTree.getValue().peekLast().getParentHash())) {
         reorgContractTrigger();
+        markAsEnrasedForTRC20();
         eraseBlock();
+
       }
     }
 
@@ -982,6 +985,7 @@ public class Manager {
         try (ISession tmpSession = revokingStore.buildSession()) {
           applyBlock(item.getBlk());
           tmpSession.commit();
+          postTRC20Trigger(item.getBlk());
         } catch (AccountResourceInsufficientException
             | ValidateSignatureException
             | ContractValidateException
@@ -1020,6 +1024,8 @@ public class Manager {
               try (ISession tmpSession = revokingStore.buildSession()) {
                 applyBlock(khaosBlock.getBlk());
                 tmpSession.commit();
+                postTRC20Trigger(khaosBlock.getBlk());
+
               } catch (AccountResourceInsufficientException
                   | ValidateSignatureException
                   | ContractValidateException
@@ -1798,6 +1804,27 @@ public class Manager {
       logger.error("{}", e);
     }
   }
+
+  private void markAsEnrasedForTRC20() {
+    try {
+      BlockCapsule blockCapsule = getBlockById(
+          getDynamicPropertiesStore().getLatestBlockHeaderHash());
+      BlockErasedTriggerCapsule erasedTriggerCapsule = new BlockErasedTriggerCapsule(blockCapsule);
+      boolean result = triggerCapsuleQueue.offer(erasedTriggerCapsule);
+      if (!result) {
+        logger.info("too many trigger, unable to save blockErasedTriggerCapsule, block num : {}",
+            blockCapsule.getNum());
+      }
+    } catch (BadItemException e) {
+      logger.error("BadItemException when try to get block hash {} for enrase",
+          getDynamicPropertiesStore().getLatestBlockHeaderHash());
+    } catch (ItemNotFoundException e) {
+      logger.error("ItemNotFoundException when try to get block hash {} for enrase",
+          getDynamicPropertiesStore().getLatestBlockHeaderHash());
+    }
+
+  }
+
 
   private void postTRC20Trigger(BlockCapsule blockCapsule) {
     TRC20TrackerCapsule trc20TrackerCapsule = new TRC20TrackerCapsule(blockCapsule);

@@ -6,6 +6,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.tron.common.logsfilter.EventPluginLoader;
 import org.tron.common.logsfilter.TRC20Utils;
 import org.tron.common.logsfilter.trigger.TRC20TrackerTrigger;
 import org.tron.common.logsfilter.trigger.TRC20TrackerTrigger.AssetStatusPojo;
@@ -45,6 +46,10 @@ public class TRC20TrackerCapsule extends TriggerCapsule {
     }
   }
 
+  @Override
+  public void processTrigger() {
+    EventPluginLoader.getInstance().postTRC20TrackerTrigger(trc20TrackerTrigger, false);
+  }
 
 
 }

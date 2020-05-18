@@ -12,10 +12,12 @@ import org.pf4j.ManifestPluginDescriptorFinder;
 import org.pf4j.PluginManager;
 import org.springframework.util.StringUtils;
 import org.tron.common.logsfilter.nativequeue.NativeMessageQueue;
+import org.tron.common.logsfilter.trigger.BlockErasedTrigger;
 import org.tron.common.logsfilter.trigger.BlockLogTrigger;
 import org.tron.common.logsfilter.trigger.ContractEventTrigger;
 import org.tron.common.logsfilter.trigger.ContractLogTrigger;
 import org.tron.common.logsfilter.trigger.SolidityTrigger;
+import org.tron.common.logsfilter.trigger.TRC20TrackerTrigger;
 import org.tron.common.logsfilter.trigger.TransactionLogTrigger;
 import org.tron.common.logsfilter.trigger.Trigger;
 
@@ -321,6 +323,29 @@ public class EventPluginLoader {
           listener.handleContractEventTrigger(toJsonString(trigger)));
     }
   }
+
+
+  public void postBlockErasedTrigger(BlockErasedTrigger trigger) {
+    if (useNativeQueue) {
+      NativeMessageQueue.getInstance()
+          .publishTrigger(toJsonString(trigger), trigger.getTriggerName());
+    } else {
+      eventListeners.forEach(listener ->
+          listener.handleBlockErasedEvent(toJsonString(trigger)));
+    }
+  }
+
+
+  public void postTRC20TrackerTrigger(TRC20TrackerTrigger trigger, boolean isSolidity) {
+    if (useNativeQueue) {
+      NativeMessageQueue.getInstance()
+          .publishTrigger(toJsonString(trigger), trigger.getTriggerName() + isSolidity);
+    } else {
+      eventListeners.forEach(listener ->
+          listener.handleTRC20Event(toJsonString(trigger), isSolidity));
+    }
+  }
+
 
   private String toJsonString(Object data) {
     String jsonData = "";

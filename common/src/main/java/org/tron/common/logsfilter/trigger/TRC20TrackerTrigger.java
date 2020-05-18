@@ -44,6 +44,16 @@ public class TRC20TrackerTrigger extends Trigger {
 
   private List<AssetStatusPojo> assetStatusList = new ArrayList<>();
 
+  public TRC20TrackerTrigger() {
+    super();
+    setTriggerName(Trigger.TRC20TRACKER_TRIGGER_NAME);
+  }
+
+  public void setSolidity() {
+    setTriggerName(Trigger.TRC20TRACKER_SOLIDITY_TRIGGER_NAME);
+  }
+
+
 }
 
 

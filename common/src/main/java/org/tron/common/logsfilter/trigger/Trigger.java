@@ -16,6 +16,8 @@ public class Trigger {
   public static final String CONTRACTEVENT_TRIGGER_NAME = "contractEventTrigger";
   public static final String SOLIDITY_TRIGGER_NAME = "solidityTrigger";
   public static final String TRC20TRACKER_TRIGGER_NAME = "trc20TrackerTrigger";
+  public static final String TRC20TRACKER_SOLIDITY_TRIGGER_NAME = "trc20SolidityTrackerTrigger";
+  public static final String BLOCK_ERASE_TRIGGER_NAME = "blockErasedTrigger";
 
   @Getter
   @Setter
