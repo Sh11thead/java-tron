@@ -110,9 +110,11 @@ public class TRC20Utils {
         String tokenAddress = WalletUtil
             .encode58Check(MUtil.convertToTronAddress(logInfo.getAddress()));
         BigInteger increment = hexStrToBigInteger(logInfo.getHexData());
+        if (increment != null) {
+          adjustIncrement(incrementMap, recAddr, tokenAddress, increment);
+          adjustIncrement(incrementMap, senderAddr, tokenAddress, increment.negate());
+        }
 
-        adjustIncrement(incrementMap, recAddr, tokenAddress, increment);
-        adjustIncrement(incrementMap, senderAddr, tokenAddress, increment.negate());
         tokenSet.add(tokenAddress);
 
       }
