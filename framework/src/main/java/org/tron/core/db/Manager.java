@@ -970,7 +970,7 @@ public class Manager {
           .getLatestBlockHeaderHash()
           .equals(binaryTree.getValue().peekLast().getParentHash())) {
         reorgContractTrigger();
-        markAsEnrasedForTRC20();
+        postBlockErasedTrigger();
         eraseBlock();
 
       }
@@ -1805,56 +1805,66 @@ public class Manager {
     }
   }
 
-  private void markAsEnrasedForTRC20() {
-    try {
-      BlockCapsule blockCapsule = getBlockById(
-          getDynamicPropertiesStore().getLatestBlockHeaderHash());
-      BlockErasedTriggerCapsule erasedTriggerCapsule = new BlockErasedTriggerCapsule(blockCapsule);
-      boolean result = triggerCapsuleQueue.offer(erasedTriggerCapsule);
-      if (!result) {
-        logger.info("too many trigger, unable to save blockErasedTriggerCapsule, block num : {}",
-            blockCapsule.getNum());
+  private void postBlockErasedTrigger() {
+    if (eventPluginLoaded && EventPluginLoader.getInstance().isBlockErasedTriggerEnable()) {
+      try {
+        BlockCapsule blockCapsule = getBlockById(
+            getDynamicPropertiesStore().getLatestBlockHeaderHash());
+        BlockErasedTriggerCapsule erasedTriggerCapsule = new BlockErasedTriggerCapsule(
+            blockCapsule);
+        boolean result = triggerCapsuleQueue.offer(erasedTriggerCapsule);
+        if (!result) {
+          logger.info("too many trigger, unable to save blockErasedTriggerCapsule, block num : {}",
+              blockCapsule.getNum());
+        }
+      } catch (BadItemException e) {
+        logger.error("BadItemException when try to get block hash {} for enrase",
+            getDynamicPropertiesStore().getLatestBlockHeaderHash());
+      } catch (ItemNotFoundException e) {
+        logger.error("ItemNotFoundException when try to get block hash {} for enrase",
+            getDynamicPropertiesStore().getLatestBlockHeaderHash());
       }
-    } catch (BadItemException e) {
-      logger.error("BadItemException when try to get block hash {} for enrase",
-          getDynamicPropertiesStore().getLatestBlockHeaderHash());
-    } catch (ItemNotFoundException e) {
-      logger.error("ItemNotFoundException when try to get block hash {} for enrase",
-          getDynamicPropertiesStore().getLatestBlockHeaderHash());
     }
-
   }
 
 
   private void postTRC20Trigger(BlockCapsule blockCapsule) {
-    TRC20TrackerCapsule trc20TrackerCapsule = new TRC20TrackerCapsule(blockCapsule);
-    boolean result = triggerCapsuleQueue.offer(trc20TrackerCapsule);
-    if (!result) {
-      logger.info("too many trigger, lost solidified trigger, "
-          + "block number: {}", latestSolidifiedBlockNumber);
+    if (eventPluginLoaded && EventPluginLoader.getInstance().isTrc20TrackerTriggerEnable()) {
+      TRC20TrackerCapsule trc20TrackerCapsule = new TRC20TrackerCapsule(blockCapsule);
+      if (trc20TrackerCapsule.getTrc20TrackerTrigger() != null) {
+        boolean result = triggerCapsuleQueue.offer(trc20TrackerCapsule);
+        if (!result) {
+          logger.info("too many trigger, lost solidified trigger, "
+              + "block number: {}", latestSolidifiedBlockNumber);
+        }
+      }
     }
-
   }
 
   private void postTRC20SolidityTrigger(long latestSolidifiedBlockNumber) {
-    try {
-      setMode(false);
+    if (eventPluginLoaded && EventPluginLoader.getInstance()
+        .isTrc20TrackerSolidityTriggerEnable()) {
 
-      BlockCapsule solidBlock = getBlockByNum(latestSolidifiedBlockNumber);
-      List<LogInfo> logInfos = getLogInfoList(parseTransactionInfoFromBlockDB(solidBlock));
-      TRC20SolidityTrackerCapsule trc20SolidityTrackerCapsule = new TRC20SolidityTrackerCapsule(
-          solidBlock, logInfos);
-      boolean result = triggerCapsuleQueue.offer(trc20SolidityTrackerCapsule);
-      if (!result) {
-        logger.info("too many trigger, lost solidified trigger, "
-            + "block number: {}", latestSolidifiedBlockNumber);
+      try {
+        BlockCapsule solidBlock = getBlockByNum(latestSolidifiedBlockNumber);
+        List<LogInfo> logInfos = getLogInfoList(parseTransactionInfoFromBlockDB(solidBlock));
+        if (solidBlock != null && logInfos.size() > 0) {
+          setMode(false);
+          TRC20SolidityTrackerCapsule trc20SolidityTrackerCapsule = new TRC20SolidityTrackerCapsule(
+              solidBlock, logInfos);
+          boolean result = triggerCapsuleQueue.offer(trc20SolidityTrackerCapsule);
+          if (!result) {
+            logger.info("too many trigger, lost solidified trigger, "
+                + "block number: {}", latestSolidifiedBlockNumber);
+          }
+        }
+      } catch (ItemNotFoundException e) {
+        e.printStackTrace();
+      } catch (BadItemException e) {
+        e.printStackTrace();
+      } finally {
+        setMode(true);
       }
-    } catch (ItemNotFoundException e) {
-      e.printStackTrace();
-    } catch (BadItemException e) {
-      e.printStackTrace();
-    } finally {
-      setMode(true);
     }
 
   }

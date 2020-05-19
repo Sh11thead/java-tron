@@ -38,7 +38,7 @@ public class TRC20SolidityTrackerCapsule extends TriggerCapsule {
 
   @Override
   public void processTrigger() {
-    EventPluginLoader.getInstance().postTRC20TrackerTrigger(trc20TrackerTrigger, true);
+    EventPluginLoader.getInstance().postTRC20TrackerTrigger(trc20TrackerTrigger);
   }
 
 }

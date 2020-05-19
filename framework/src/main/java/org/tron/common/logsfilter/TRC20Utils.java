@@ -118,6 +118,7 @@ public class TRC20Utils {
       String[] key = keys.split(",");
       AssetStatusPojo assetStatusPojo = new AssetStatusPojo();
       assetStatusPojo.setAccountAddress(key[0]);
+      assetStatusPojo.setTokenAddress(key[1]);
       assetStatusPojo.setIncrementBalance(bigIntegertoString(incrementMap.get(keys)));
       assetStatusPojo.setBalance(bigIntegertoString(balanceMap.get(keys)));
       assetStatusPojo.setDecimals(bigIntegertoString(decimalMap.get(key[1])));
