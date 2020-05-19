@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jetty.util.StringUtil;
 import org.spongycastle.util.encoders.Hex;
 import org.springframework.util.StringUtils;
 import org.tron.common.logsfilter.trigger.TRC20TrackerTrigger.AssetStatusPojo;
@@ -38,13 +39,35 @@ public class TRC20Utils {
     if (!result.isRevert() && StringUtils.isEmpty(result.getRuntimeError())
         && result.getHReturn() != null) {
       try {
-        BigInteger ret = new BigInteger(Hex.toHexString(result.getHReturn()), 16);
+        BigInteger ret = toBigInteger(result.getHReturn());
         return ret;
       } catch (Exception e) {
       }
     }
     return null;
 
+  }
+
+
+  public static BigInteger hexStrToBigInteger(String hexStr) {
+    if (StringUtil.isNotBlank(hexStr)) {
+      try {
+        return new BigInteger(hexStr, 16);
+      } catch (Exception e) {
+      }
+    }
+    return null;
+  }
+
+  public static BigInteger toBigInteger(byte[] input) {
+    if (input != null && input.length > 0) {
+      try {
+        String hex = Hex.toHexString(input);
+        return hexStrToBigInteger(hex);
+      } catch (Exception e) {
+      }
+    }
+    return null;
   }
 
   public static BigInteger getTRC20Balance(String ownerAddress, String contractAddress,
@@ -55,7 +78,7 @@ public class TRC20Utils {
     if (!result.isRevert() && StringUtils.isEmpty(result.getRuntimeError())
         && result.getHReturn() != null) {
       try {
-        BigInteger ret = new BigInteger(Hex.toHexString(result.getHReturn()), 16);
+        BigInteger ret = toBigInteger(result.getHReturn());
         return ret;
       } catch (Exception e) {
       }
@@ -86,7 +109,7 @@ public class TRC20Utils {
             .encode58Check(MUtil.convertToTronAddress(logInfo.getTopics().get(2).getLast20Bytes()));
         String tokenAddress = WalletUtil
             .encode58Check(MUtil.convertToTronAddress(logInfo.getAddress()));
-        BigInteger increment = new BigInteger(logInfo.getHexData(), 16);
+        BigInteger increment = hexStrToBigInteger(logInfo.getHexData());
 
         adjustIncrement(incrementMap, recAddr, tokenAddress, increment);
         adjustIncrement(incrementMap, senderAddr, tokenAddress, increment.negate());
