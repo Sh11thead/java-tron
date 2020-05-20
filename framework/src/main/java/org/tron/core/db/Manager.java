@@ -1806,6 +1806,7 @@ public class Manager {
   }
 
   private void postBlockErasedTrigger() {
+    logger.info("ready to postBlockErasedTrigger");
     if (eventPluginLoaded && EventPluginLoader.getInstance().isBlockErasedTriggerEnable()) {
       try {
         BlockCapsule blockCapsule = getBlockById(
@@ -1816,7 +1817,10 @@ public class Manager {
         if (!result) {
           logger.info("too many trigger, unable to save blockErasedTriggerCapsule, block num : {}",
               blockCapsule.getNum());
+        } else {
+          logger.info("success to post BlockErasedTrigger ,block num:{}", blockCapsule.getNum());
         }
+
       } catch (BadItemException e) {
         logger.error("BadItemException when try to get block hash {} for enrase",
             getDynamicPropertiesStore().getLatestBlockHeaderHash());
