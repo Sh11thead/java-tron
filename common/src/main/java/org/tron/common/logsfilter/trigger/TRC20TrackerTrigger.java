@@ -40,7 +40,11 @@ public class TRC20TrackerTrigger extends Trigger {
 
   private long blockNumber;
 
+  private String parentHash;
+
   private String blockHash;
+
+  private Boolean solidity = false;
 
   private List<AssetStatusPojo> assetStatusList = new ArrayList<>();
 
@@ -49,7 +53,7 @@ public class TRC20TrackerTrigger extends Trigger {
     setTriggerName(Trigger.TRC20TRACKER_TRIGGER_NAME);
   }
 
-  public void setSolidity() {
+  public void solidityType() {
     setTriggerName(Trigger.TRC20TRACKER_SOLIDITY_TRIGGER_NAME);
   }
 

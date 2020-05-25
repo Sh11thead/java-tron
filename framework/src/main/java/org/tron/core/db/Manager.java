@@ -1851,7 +1851,7 @@ public class Manager {
 
       try {
         BlockCapsule solidBlock = getBlockByNum(latestSolidifiedBlockNumber);
-        List<LogInfo> logInfos = getLogInfoList(parseTransactionInfoFromBlockDB(solidBlock));
+/*        List<LogInfo> logInfos = getLogInfoList(parseTransactionInfoFromBlockDB(solidBlock));
         if (solidBlock != null && logInfos.size() > 0) {
           setMode(false);
           TRC20SolidityTrackerCapsule trc20SolidityTrackerCapsule = new TRC20SolidityTrackerCapsule(
@@ -1861,6 +1861,13 @@ public class Manager {
             logger.info("too many trigger, lost solidified trigger, "
                 + "block number: {}", latestSolidifiedBlockNumber);
           }
+        }*/
+        TRC20SolidityTrackerCapsule trc20SolidityTrackerCapsule = new TRC20SolidityTrackerCapsule(
+            solidBlock, null);
+        boolean result = triggerCapsuleQueue.offer(trc20SolidityTrackerCapsule);
+        if (!result) {
+          logger.info("too many trigger, lost solidified trigger, "
+              + "block number: {}", latestSolidifiedBlockNumber);
         }
       } catch (ItemNotFoundException e) {
         e.printStackTrace();

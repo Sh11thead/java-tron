@@ -38,6 +38,7 @@ public class TRC20TrackerCapsule extends TriggerCapsule {
           .parseTrc20AssetStatusPojo(block, logInfos);
       trc20TrackerTrigger = new TRC20TrackerTrigger();
       trc20TrackerTrigger.setBlockHash(block.getBlockId().toString());
+      trc20TrackerTrigger.setParentHash(block.getParentHash().toString());
       trc20TrackerTrigger.setBlockNumber(block.getNum());
       trc20TrackerTrigger.setTimeStamp(block.getTimeStamp());
       trc20TrackerTrigger.setAssetStatusList(assetStatusPojos);
