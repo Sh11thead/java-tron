@@ -21,24 +21,24 @@ public class TRC20SolidityTrackerCapsule extends TriggerCapsule {
   TRC20TrackerTrigger trc20TrackerTrigger;
 
   public TRC20SolidityTrackerCapsule(BlockCapsule block, List<LogInfo> logInfos) {
-    if (logInfos.size() > 0) {
-      trc20TrackerTrigger = new TRC20TrackerTrigger();
-      trc20TrackerTrigger.setBlockHash(block.getBlockId().toString());
-      trc20TrackerTrigger.setParentHash(block.getParentHash().toString());
-      trc20TrackerTrigger.setBlockNumber(block.getNum());
-      trc20TrackerTrigger.setTimeStamp(block.getTimeStamp());
-      trc20TrackerTrigger.solidityType();
-      trc20TrackerTrigger.setSolidity(true);
-      if (logInfos != null) {
-        List<AssetStatusPojo> assetStatusPojos = TRC20Utils
-            .parseTrc20AssetStatusPojo(block, logInfos);
-        trc20TrackerTrigger.setAssetStatusList(assetStatusPojos);
 
-      }
-      logger.info("---------------------trc20SolidityTrigger------------------------{}",
-          JSONObject.toJSONString(trc20TrackerTrigger));
+    trc20TrackerTrigger = new TRC20TrackerTrigger();
+    trc20TrackerTrigger.setBlockHash(block.getBlockId().toString());
+    trc20TrackerTrigger.setParentHash(block.getParentHash().toString());
+    trc20TrackerTrigger.setBlockNumber(block.getNum());
+    trc20TrackerTrigger.setTimeStamp(block.getTimeStamp());
+    trc20TrackerTrigger.solidityType();
+    trc20TrackerTrigger.setSolidity(true);
+    if (logInfos != null && logInfos.size() > 0) {
+      List<AssetStatusPojo> assetStatusPojos = TRC20Utils
+          .parseTrc20AssetStatusPojo(block, logInfos);
+      trc20TrackerTrigger.setAssetStatusList(assetStatusPojos);
 
     }
+    logger.info("---------------------trc20SolidityTrigger------------------------{}",
+        JSONObject.toJSONString(trc20TrackerTrigger));
+
+
   }
 
   @Override

@@ -1862,12 +1862,14 @@ public class Manager {
                 + "block number: {}", latestSolidifiedBlockNumber);
           }
         }*/
-        TRC20SolidityTrackerCapsule trc20SolidityTrackerCapsule = new TRC20SolidityTrackerCapsule(
-            solidBlock, null);
-        boolean result = triggerCapsuleQueue.offer(trc20SolidityTrackerCapsule);
-        if (!result) {
-          logger.info("too many trigger, lost solidified trigger, "
-              + "block number: {}", latestSolidifiedBlockNumber);
+        if (solidBlock != null) {
+          TRC20SolidityTrackerCapsule trc20SolidityTrackerCapsule = new TRC20SolidityTrackerCapsule(
+              solidBlock, null);
+          boolean result = triggerCapsuleQueue.offer(trc20SolidityTrackerCapsule);
+          if (!result) {
+            logger.info("too many trigger, lost solidified trigger, "
+                + "block number: {}", latestSolidifiedBlockNumber);
+          }
         }
       } catch (ItemNotFoundException e) {
         e.printStackTrace();
