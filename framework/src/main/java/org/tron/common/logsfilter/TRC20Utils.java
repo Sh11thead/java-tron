@@ -27,6 +27,7 @@ import org.tron.core.store.StoreFactory;
 import org.tron.core.vm.utils.MUtil;
 import org.tron.protos.Protocol.Transaction;
 import org.tron.protos.Protocol.Transaction.Contract.ContractType;
+import org.tron.protos.Protocol.Transaction.Result.contractResult;
 import org.tron.protos.contract.SmartContractOuterClass.TriggerSmartContract;
 
 @Slf4j
@@ -36,7 +37,8 @@ public class TRC20Utils {
   public static BigInteger getTRC20Decimal(String contractAddress, BlockCapsule baseBlockCap) {
     byte[] data = Hex.decode("313ce567");
     ProgramResult result = triggerFromVM(contractAddress, data, baseBlockCap);
-    if (!result.isRevert() && StringUtils.isEmpty(result.getRuntimeError())
+    if (result.getResultCode().equals(contractResult.SUCCESS) && !result.isRevert() && StringUtils
+        .isEmpty(result.getRuntimeError())
         && result.getHReturn() != null) {
       try {
         BigInteger ret = toBigInteger(result.getHReturn());
@@ -75,7 +77,8 @@ public class TRC20Utils {
     byte[] data = Bytes.concat(Hex.decode("70a082310000000000000000000000"),
         Commons.decodeFromBase58Check(ownerAddress));
     ProgramResult result = triggerFromVM(contractAddress, data, baseBlockCap);
-    if (!result.isRevert() && StringUtils.isEmpty(result.getRuntimeError())
+    if (result.getResultCode().equals(contractResult.SUCCESS) &&
+        !result.isRevert() && StringUtils.isEmpty(result.getRuntimeError())
         && result.getHReturn() != null) {
       try {
         BigInteger ret = toBigInteger(result.getHReturn());
