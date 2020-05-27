@@ -1014,6 +1014,7 @@ public class Manager {
             while (!getDynamicPropertiesStore()
                 .getLatestBlockHeaderHash()
                 .equals(binaryTree.getValue().peekLast().getParentHash())) {
+              postBlockErasedTrigger();
               eraseBlock();
             }
 
