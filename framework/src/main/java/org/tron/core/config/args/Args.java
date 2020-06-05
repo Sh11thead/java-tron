@@ -453,6 +453,10 @@ public class Args {
   @Setter
   private boolean fullNodeAllowShieldedTransactionArgs;
 
+  @Getter/**/
+  @Setter
+  private long allowShieldedTRC20Transaction;
+
   @Getter
   @Setter
   private long blockNumForEneryLimit;
@@ -603,6 +607,7 @@ public class Args {
     INSTANCE.maxTimeRatio = 5.0;
     INSTANCE.longRunningTime = 10;
 //    INSTANCE.allowShieldedTransaction = 0;
+    INSTANCE.allowShieldedTRC20Transaction = 0;
     INSTANCE.maxHttpConnectNumber = 50;
     INSTANCE.allowMultiSign = 0;
     INSTANCE.trxExpirationTimeInMilliseconds = 0;
@@ -1032,6 +1037,10 @@ public class Args {
 //    INSTANCE.allowShieldedTransaction =
 //        config.hasPath(Constant.COMMITTEE_ALLOW_SHIELDED_TRANSACTION) ? config
 //            .getInt(Constant.COMMITTEE_ALLOW_SHIELDED_TRANSACTION) : 0;
+
+    INSTANCE.allowShieldedTRC20Transaction =
+        config.hasPath(Constant.COMMITTEE_ALLOW_SHIELDED_TRC20_TRANSACTION) ? config
+            .getInt(Constant.COMMITTEE_ALLOW_SHIELDED_TRC20_TRANSACTION) : 0;
 
     INSTANCE.eventPluginConfig =
         config.hasPath(Constant.EVENT_SUBSCRIBE) ?
@@ -1486,6 +1495,8 @@ public class Args {
     DBConfig.setAllowSameTokenName(cfgArgs.getAllowSameTokenName());
     DBConfig.setAllowCreationOfContracts(cfgArgs.getAllowCreationOfContracts());
 //    DBConfig.setAllowShieldedTransaction(cfgArgs.getAllowShieldedTransaction());
+    DBConfig.setAllowShieldedTRC20Transaction(
+        cfgArgs.getAllowShieldedTRC20Transaction());
     DBConfig.setAllowAccountStateRoot(cfgArgs.getAllowAccountStateRoot());
     DBConfig.setAllowProtoFilterNum(cfgArgs.getAllowProtoFilterNum());
     DBConfig.setProposalExpireTime(cfgArgs.getProposalExpireTime());
