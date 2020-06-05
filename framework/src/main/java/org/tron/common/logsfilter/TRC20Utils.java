@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.util.StringUtil;
@@ -36,7 +37,8 @@ public class TRC20Utils {
   public static BigInteger getTRC20Decimal(String contractAddress, BlockCapsule baseBlockCap) {
     byte[] data = Hex.decode("313ce567");
     ProgramResult result = triggerFromVM(contractAddress, data, baseBlockCap);
-    if (!result.isRevert() && StringUtils.isEmpty(result.getRuntimeError())
+    if (Objects.isNull(result.getException()) && !result.isRevert() && StringUtils
+        .isEmpty(result.getRuntimeError())
         && result.getHReturn() != null) {
       try {
         BigInteger ret = toBigInteger(result.getHReturn());
@@ -75,7 +77,8 @@ public class TRC20Utils {
     byte[] data = Bytes.concat(Hex.decode("70a082310000000000000000000000"),
         Commons.decodeFromBase58Check(ownerAddress));
     ProgramResult result = triggerFromVM(contractAddress, data, baseBlockCap);
-    if (!result.isRevert() && StringUtils.isEmpty(result.getRuntimeError())
+    if (Objects.isNull(result.getException()) &&
+        !result.isRevert() && StringUtils.isEmpty(result.getRuntimeError())
         && result.getHReturn() != null) {
       try {
         BigInteger ret = toBigInteger(result.getHReturn());
