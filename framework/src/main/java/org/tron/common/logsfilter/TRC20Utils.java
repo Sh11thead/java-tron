@@ -32,6 +32,7 @@ import org.tron.protos.contract.SmartContractOuterClass.TriggerSmartContract;
 
 @Slf4j
 public class TRC20Utils {
+  static VMActuator vmActuator = new VMActuator(true);
 
 
   public static BigInteger getTRC20Decimal(String contractAddress, BlockCapsule baseBlockCap) {
@@ -197,7 +198,6 @@ public class TRC20Utils {
         new TransactionCapsule(txBuilder.build()),
         StoreFactory.getInstance(), true,
         false);
-    VMActuator vmActuator = new VMActuator(true);
 
     try {
       vmActuator.validate(context);
