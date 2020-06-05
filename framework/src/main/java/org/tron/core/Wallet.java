@@ -99,7 +99,6 @@ import org.tron.common.overlay.discover.node.NodeHandler;
 import org.tron.common.overlay.discover.node.NodeManager;
 import org.tron.common.overlay.message.Message;
 import org.tron.common.runtime.ProgramResult;
-import org.tron.common.storage.DepositImpl;
 import org.tron.common.utils.Base58;
 import org.tron.common.utils.ByteArray;
 import org.tron.common.utils.ByteUtil;
@@ -2383,7 +2382,6 @@ public class Wallet {
     if (!Args.getInstance().isSupportConstant()) {
       throw new ContractValidateException("this node does not support constant");
     }
-    DepositImpl deposit = DepositImpl.createRoot(dbManager);
 
     Block headBlock;
     List<BlockCapsule> blockCapsuleList = dbManager.getBlockStore()
@@ -3287,17 +3285,17 @@ public class Wallet {
       trxExtBuilder.setResult(retBuilder);
     } catch (ContractValidateException | VMIllegalException e) {
       retBuilder.setResult(false).setCode(response_code.CONTRACT_VALIDATE_ERROR)
-                .setMessage(ByteString.copyFromUtf8(CONTRACT_VALIDATE_ERROR + e.getMessage()));
+          .setMessage(ByteString.copyFromUtf8(CONTRACT_VALIDATE_ERROR + e.getMessage()));
       trxExtBuilder.setResult(retBuilder);
       logger.warn(CONTRACT_VALIDATE_EXCEPTION, e.getMessage());
     } catch (RuntimeException e) {
       retBuilder.setResult(false).setCode(response_code.CONTRACT_EXE_ERROR)
-                .setMessage(ByteString.copyFromUtf8(e.getClass() + " : " + e.getMessage()));
+          .setMessage(ByteString.copyFromUtf8(e.getClass() + " : " + e.getMessage()));
       trxExtBuilder.setResult(retBuilder);
       logger.warn("When run constant call in VM, have RuntimeException: " + e.getMessage());
     } catch (Exception e) {
       retBuilder.setResult(false).setCode(response_code.OTHER_ERROR)
-                .setMessage(ByteString.copyFromUtf8(e.getClass() + " : " + e.getMessage()));
+          .setMessage(ByteString.copyFromUtf8(e.getClass() + " : " + e.getMessage()));
       trxExtBuilder.setResult(retBuilder);
       logger.warn("unknown exception caught: " + e.getMessage(), e);
     } finally {
