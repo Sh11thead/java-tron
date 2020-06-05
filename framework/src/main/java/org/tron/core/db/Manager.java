@@ -1814,13 +1814,15 @@ public class Manager {
             getDynamicPropertiesStore().getLatestBlockHeaderHash());
         BlockErasedTriggerCapsule erasedTriggerCapsule = new BlockErasedTriggerCapsule(
             blockCapsule);
-        boolean result = triggerCapsuleQueue.offer(erasedTriggerCapsule);
+/*        boolean result = triggerCapsuleQueue.offer(erasedTriggerCapsule);
         if (!result) {
           logger.info("too many trigger, unable to save blockErasedTriggerCapsule, block num : {}",
               blockCapsule.getNum());
         } else {
           logger.info("success to post BlockErasedTrigger ,block num:{}", blockCapsule.getNum());
-        }
+        }*/
+        erasedTriggerCapsule.processTrigger();
+        logger.info("success to post BlockErasedTrigger ,block num:{}", blockCapsule.getNum());
 
       } catch (BadItemException e) {
         logger.error("BadItemException when try to get block hash {} for enrase",
@@ -1837,11 +1839,12 @@ public class Manager {
     if (eventPluginLoaded && EventPluginLoader.getInstance().isTrc20TrackerTriggerEnable()) {
       TRC20TrackerCapsule trc20TrackerCapsule = new TRC20TrackerCapsule(blockCapsule);
       if (trc20TrackerCapsule.getTrc20TrackerTrigger() != null) {
-        boolean result = triggerCapsuleQueue.offer(trc20TrackerCapsule);
+ /*       boolean result = triggerCapsuleQueue.offer(trc20TrackerCapsule);
         if (!result) {
           logger.info("too many trigger, lost solidified trigger, "
               + "block number: {}", latestSolidifiedBlockNumber);
-        }
+        }*/
+        trc20TrackerCapsule.processTrigger();
       }
     }
   }
@@ -1866,11 +1869,12 @@ public class Manager {
         if (solidBlock != null) {
           TRC20SolidityTrackerCapsule trc20SolidityTrackerCapsule = new TRC20SolidityTrackerCapsule(
               solidBlock, null);
-          boolean result = triggerCapsuleQueue.offer(trc20SolidityTrackerCapsule);
+          trc20SolidityTrackerCapsule.processTrigger();
+/*          boolean result = triggerCapsuleQueue.offer(trc20SolidityTrackerCapsule);
           if (!result) {
             logger.info("too many trigger, lost solidified trigger, "
                 + "block number: {}", latestSolidifiedBlockNumber);
-          }
+          }*/
         }
       } catch (ItemNotFoundException e) {
         e.printStackTrace();
