@@ -287,6 +287,8 @@ public class Manager {
   // the capacity is equal to Integer.MAX_VALUE default
   private BlockingQueue<TransactionCapsule> repushTransactions;
   private BlockingQueue<TriggerCapsule> triggerCapsuleQueue;
+
+  private long lastTrc20TrackedSolidityBlockNum = 0;
   /**
    * Cycle thread to repush Transactions
    */
@@ -1852,9 +1854,13 @@ public class Manager {
   private void postTRC20SolidityTrigger(long latestSolidifiedBlockNumber) {
     if (eventPluginLoaded && EventPluginLoader.getInstance()
         .isTrc20TrackerSolidityTriggerEnable()) {
-
-      try {
-        BlockCapsule solidBlock = getBlockByNum(latestSolidifiedBlockNumber);
+      if (lastTrc20TrackedSolidityBlockNum == 0) {
+        lastTrc20TrackedSolidityBlockNum = latestSolidifiedBlockNumber - 1;
+      }
+      for (long i = lastTrc20TrackedSolidityBlockNum; i < latestSolidifiedBlockNumber; i++) {
+        try {
+          lastTrc20TrackedSolidityBlockNum++;
+          BlockCapsule solidBlock = getBlockByNum(lastTrc20TrackedSolidityBlockNum);
 /*        List<LogInfo> logInfos = getLogInfoList(parseTransactionInfoFromBlockDB(solidBlock));
         if (solidBlock != null && logInfos.size() > 0) {
           setMode(false);
@@ -1866,22 +1872,24 @@ public class Manager {
                 + "block number: {}", latestSolidifiedBlockNumber);
           }
         }*/
-        if (solidBlock != null) {
-          TRC20SolidityTrackerCapsule trc20SolidityTrackerCapsule = new TRC20SolidityTrackerCapsule(
-              solidBlock, null);
-          trc20SolidityTrackerCapsule.processTrigger();
+          if (solidBlock != null) {
 /*          boolean result = triggerCapsuleQueue.offer(trc20SolidityTrackerCapsule);
           if (!result) {
             logger.info("too many trigger, lost solidified trigger, "
                 + "block number: {}", latestSolidifiedBlockNumber);
           }*/
-        }
-      } catch (ItemNotFoundException e) {
-        e.printStackTrace();
-      } catch (BadItemException e) {
-        e.printStackTrace();
-      } finally {
+
+            TRC20SolidityTrackerCapsule trc20SolidityTrackerCapsule = new TRC20SolidityTrackerCapsule(
+                solidBlock, null);
+            trc20SolidityTrackerCapsule.processTrigger();
+          }
+        } catch (ItemNotFoundException e) {
+          e.printStackTrace();
+        } catch (BadItemException e) {
+          e.printStackTrace();
+        } /*finally {
         setMode(true);
+      }*/
       }
     }
 

@@ -23,8 +23,12 @@ public class TRC20TrackerCapsule extends TriggerCapsule {
   TRC20TrackerTrigger trc20TrackerTrigger;
 
   public TRC20TrackerCapsule(BlockCapsule block) {
+    trc20TrackerTrigger = new TRC20TrackerTrigger();
+    trc20TrackerTrigger.setBlockHash(block.getBlockId().toString());
+    trc20TrackerTrigger.setParentHash(block.getParentHash().toString());
+    trc20TrackerTrigger.setBlockNumber(block.getNum());
+    trc20TrackerTrigger.setTimeStamp(block.getTimeStamp());
     List<TransactionCapsule> transactionCapsules = block.getTransactions();
-    logger.info("There is {} in trc20 tracker block", transactionCapsules.size());
     List<LogInfo> logInfos = new ArrayList<>();
     for (TransactionCapsule transactionCapsule : transactionCapsules) {
       List<LogInfo> innerList = transactionCapsule.getTrxTrace().getTransactionContext()
@@ -36,15 +40,10 @@ public class TRC20TrackerCapsule extends TriggerCapsule {
     if (logInfos.size() > 0) {
       List<AssetStatusPojo> assetStatusPojos = TRC20Utils
           .parseTrc20AssetStatusPojo(block, logInfos);
-      trc20TrackerTrigger = new TRC20TrackerTrigger();
-      trc20TrackerTrigger.setBlockHash(block.getBlockId().toString());
-      trc20TrackerTrigger.setParentHash(block.getParentHash().toString());
-      trc20TrackerTrigger.setBlockNumber(block.getNum());
-      trc20TrackerTrigger.setTimeStamp(block.getTimeStamp());
       trc20TrackerTrigger.setAssetStatusList(assetStatusPojos);
-      logger.info("---------------------trc20TrackerTrigger------------------------{}",
-          JSONObject.toJSONString(trc20TrackerTrigger));
     }
+    logger.info("---------------------trc20TrackerTrigger------------------------{}",
+        JSONObject.toJSONString(trc20TrackerTrigger));
   }
 
   @Override

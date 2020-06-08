@@ -32,6 +32,7 @@ import org.tron.protos.contract.SmartContractOuterClass.TriggerSmartContract;
 
 @Slf4j
 public class TRC20Utils {
+
   static VMActuator vmActuator = new VMActuator(true);
 
 
@@ -138,9 +139,9 @@ public class TRC20Utils {
       }
     }
 
-    logger.info("incrementMap: {}", incrementMap);
-    logger.info("balanceMap: {}", balanceMap);
-    logger.info("decimalsMap: {}", decimalMap);
+    logger.debug("incrementMap: {}", incrementMap);
+    logger.debug("balanceMap: {}", balanceMap);
+    logger.debug("decimalsMap: {}", decimalMap);
 
     //
     for (String keys : incrementMap.keySet()) {
