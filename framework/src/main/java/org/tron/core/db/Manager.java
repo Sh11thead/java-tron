@@ -51,12 +51,15 @@ import org.tron.common.logsfilter.FilterQuery;
 import org.tron.common.logsfilter.capsule.BlockErasedTriggerCapsule;
 import org.tron.common.logsfilter.capsule.BlockLogTriggerCapsule;
 import org.tron.common.logsfilter.capsule.ContractTriggerCapsule;
+import org.tron.common.logsfilter.capsule.ShieldedTRC20SolidityTrackerCapsule;
 import org.tron.common.logsfilter.capsule.SolidityTriggerCapsule;
 import org.tron.common.logsfilter.capsule.TRC20SolidityTrackerCapsule;
 import org.tron.common.logsfilter.capsule.TRC20TrackerCapsule;
 import org.tron.common.logsfilter.capsule.TransactionLogTriggerCapsule;
 import org.tron.common.logsfilter.capsule.TriggerCapsule;
 import org.tron.common.logsfilter.trigger.ContractTrigger;
+import org.tron.common.logsfilter.trigger.ShieldedTRC20TrackerTrigger.LogPojo;
+import org.tron.common.logsfilter.trigger.ShieldedTRC20TrackerTrigger.TransactionPojo;
 import org.tron.common.overlay.discover.node.Node;
 import org.tron.common.overlay.message.Message;
 import org.tron.common.runtime.RuntimeImpl;
@@ -68,6 +71,7 @@ import org.tron.common.utils.Pair;
 import org.tron.common.utils.SessionOptional;
 import org.tron.common.utils.Sha256Hash;
 import org.tron.common.utils.StringUtil;
+import org.tron.common.utils.WalletUtil;
 import org.tron.common.zksnark.MerkleContainer;
 import org.tron.consensus.Consensus;
 import org.tron.consensus.base.Param.Miner;
@@ -1816,13 +1820,7 @@ public class Manager {
             getDynamicPropertiesStore().getLatestBlockHeaderHash());
         BlockErasedTriggerCapsule erasedTriggerCapsule = new BlockErasedTriggerCapsule(
             blockCapsule);
-/*        boolean result = triggerCapsuleQueue.offer(erasedTriggerCapsule);
-        if (!result) {
-          logger.info("too many trigger, unable to save blockErasedTriggerCapsule, block num : {}",
-              blockCapsule.getNum());
-        } else {
-          logger.info("success to post BlockErasedTrigger ,block num:{}", blockCapsule.getNum());
-        }*/
+
         erasedTriggerCapsule.processTrigger();
         logger.info("success to post BlockErasedTrigger ,block num:{}", blockCapsule.getNum());
 
@@ -1841,19 +1839,15 @@ public class Manager {
     if (eventPluginLoaded && EventPluginLoader.getInstance().isTrc20TrackerTriggerEnable()) {
       TRC20TrackerCapsule trc20TrackerCapsule = new TRC20TrackerCapsule(blockCapsule);
       if (trc20TrackerCapsule.getTrc20TrackerTrigger() != null) {
- /*       boolean result = triggerCapsuleQueue.offer(trc20TrackerCapsule);
-        if (!result) {
-          logger.info("too many trigger, lost solidified trigger, "
-              + "block number: {}", latestSolidifiedBlockNumber);
-        }*/
         trc20TrackerCapsule.processTrigger();
       }
     }
   }
 
   private void postTRC20SolidityTrigger(long latestSolidifiedBlockNumber) {
-    if (eventPluginLoaded && EventPluginLoader.getInstance()
-        .isTrc20TrackerSolidityTriggerEnable()) {
+    if (eventPluginLoaded && (EventPluginLoader.getInstance()
+        .isTrc20TrackerSolidityTriggerEnable() || EventPluginLoader.getInstance()
+        .isShieldedTRC20TrackerSolidityTriggerEnable())) {
       if (lastTrc20TrackedSolidityBlockNum == 0) {
         lastTrc20TrackedSolidityBlockNum = latestSolidifiedBlockNumber - 1;
       }
@@ -1861,28 +1855,40 @@ public class Manager {
         try {
           lastTrc20TrackedSolidityBlockNum++;
           BlockCapsule solidBlock = getBlockByNum(lastTrc20TrackedSolidityBlockNum);
-/*        List<LogInfo> logInfos = getLogInfoList(parseTransactionInfoFromBlockDB(solidBlock));
-        if (solidBlock != null && logInfos.size() > 0) {
-          setMode(false);
-          TRC20SolidityTrackerCapsule trc20SolidityTrackerCapsule = new TRC20SolidityTrackerCapsule(
-              solidBlock, logInfos);
-          boolean result = triggerCapsuleQueue.offer(trc20SolidityTrackerCapsule);
-          if (!result) {
-            logger.info("too many trigger, lost solidified trigger, "
-                + "block number: {}", latestSolidifiedBlockNumber);
-          }
-        }*/
           if (solidBlock != null) {
-/*          boolean result = triggerCapsuleQueue.offer(trc20SolidityTrackerCapsule);
-          if (!result) {
-            logger.info("too many trigger, lost solidified trigger, "
-                + "block number: {}", latestSolidifiedBlockNumber);
-          }*/
+            if (EventPluginLoader.getInstance().isTrc20TrackerSolidityTriggerEnable()) {
+              TRC20SolidityTrackerCapsule trc20SolidityTrackerCapsule = new TRC20SolidityTrackerCapsule(
+                  solidBlock, null);
+              trc20SolidityTrackerCapsule.processTrigger();
+            }
 
-            TRC20SolidityTrackerCapsule trc20SolidityTrackerCapsule = new TRC20SolidityTrackerCapsule(
-                solidBlock, null);
-            trc20SolidityTrackerCapsule.processTrigger();
+            if (EventPluginLoader.getInstance().isShieldedTRC20TrackerSolidityTriggerEnable()) {
+              List<TransactionInfo> transactionInfos = parseTransactionInfoFromBlockDB(solidBlock);
+              List<TransactionPojo> transactionPojos = new ArrayList<>();
+              for (TransactionInfo info : transactionInfos) {
+                List<TransactionInfo.Log> logList = info.getLogList();
+                int index = 0;
+                List<LogPojo> logPojos = new ArrayList<>();
+                for (TransactionInfo.Log log : logList) {
+                  //if (Wallet.isShieldedTRC20Log(log)) {
+                  if (true) {
+                    index += 1;
+                    logPojos.add(toLogPojo(log));
+                  }
+                }
+                if (logPojos.size() > 0) {
+                  transactionPojos
+                      .add(toTransactionPojo(Hex.toHexString(info.getId().toByteArray()),
+                          WalletUtil.encode58Check(info.getContractAddress().toByteArray()),
+                          logPojos));
+                }
+              }
+              ShieldedTRC20SolidityTrackerCapsule shieldedTRC20SolidityTrackerCapsule = new ShieldedTRC20SolidityTrackerCapsule(
+                  solidBlock, transactionPojos);
+
+            }
           }
+
         } catch (ItemNotFoundException e) {
           e.printStackTrace();
         } catch (BadItemException e) {
@@ -2054,5 +2060,26 @@ public class Manager {
       }
       return true;
     }
+  }
+
+
+  private static TransactionPojo toTransactionPojo(String txid, String contractAddress,
+      List<LogPojo> logPojos) {
+    TransactionPojo transactionPojo = new TransactionPojo();
+    transactionPojo.setTxId(txid);
+    transactionPojo.setContractAddress(contractAddress);
+    transactionPojo.setLogList(logPojos);
+    return transactionPojo;
+  }
+
+
+  private static LogPojo toLogPojo(TransactionInfo.Log log) {
+    LogPojo ret = new LogPojo();
+    ret.setAddress(WalletUtil.encode58Check(log.getAddress().toByteArray()));
+    ret.setData(Hex.toHexString(log.getData().toByteArray()));
+    for (ByteString b : log.getTopicsList()) {
+      ret.getTopics().add(Hex.toHexString(b.toByteArray()));
+    }
+    return ret;
   }
 }

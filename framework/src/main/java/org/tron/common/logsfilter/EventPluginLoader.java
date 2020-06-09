@@ -54,6 +54,8 @@ public class EventPluginLoader {
 
   private boolean blockErasedTriggerEnable = false;
 
+  private boolean shieldedTRC20TrackerSolidityTriggerEnable = false;
+
 
   private FilterQuery filterQuery;
 
@@ -232,6 +234,16 @@ public class EventPluginLoader {
       if (!useNativeQueue) {
         setPluginTopic(Trigger.TRC20TRACKER_TRIGGER, triggerConfig.getTopic());
       }
+    } else if (EventPluginConfig.SHIELDED_TRC20_SOLIDITY_TRACKER
+        .equalsIgnoreCase(triggerConfig.getTriggerName())) {
+      if (triggerConfig.isEnabled()) {
+        shieldedTRC20TrackerSolidityTriggerEnable = true;
+      } else {
+        shieldedTRC20TrackerSolidityTriggerEnable = false;
+      }
+      if (!useNativeQueue) {
+        setPluginTopic(Trigger.SHIELDED_TRC20SOLIDITYTRACKER_TRIGGER, triggerConfig.getTopic());
+      }
     }
   }
 
@@ -275,6 +287,10 @@ public class EventPluginLoader {
 
   public synchronized boolean isBlockErasedTriggerEnable() {
     return blockErasedTriggerEnable;
+  }
+
+  public synchronized boolean isShieldedTRC20TrackerSolidityTriggerEnable() {
+    return shieldedTRC20TrackerSolidityTriggerEnable;
   }
 
   private void setPluginTopic(int eventType, String topic) {

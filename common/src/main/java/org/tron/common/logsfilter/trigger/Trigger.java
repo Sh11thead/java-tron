@@ -14,6 +14,7 @@ public class Trigger {
   public static final int TRC20TRACKER_TRIGGER = 1000;
   public static final int TRC20TRACKER_SOLIDITY_TRIGGER = 1001;
   public static final int BLOCK_ERASE_TRIGGER = 1002;
+  public static final int SHIELDED_TRC20SOLIDITYTRACKER_TRIGGER = 1003;
 
 
   public static final String BLOCK_TRIGGER_NAME = "blockTrigger";
@@ -25,6 +26,8 @@ public class Trigger {
   public static final String TRC20TRACKER_TRIGGER_NAME = "trc20TrackerTrigger";
   public static final String TRC20TRACKER_SOLIDITY_TRIGGER_NAME = "trc20SolidityTrackerTrigger";
   public static final String BLOCK_ERASE_TRIGGER_NAME = "blockErasedTrigger";
+  public static final String SHIELDED_TRC20SOLIDITYTRACKER_TRIGGER_NAME = "shieldedTRC20SolidityTracker";
+
 
   @Getter
   @Setter

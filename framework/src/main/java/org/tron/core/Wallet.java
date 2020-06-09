@@ -2984,7 +2984,7 @@ public class Wallet {
     return builder.build(false);
   }
 
-  private boolean isShieldedTRC20Log(TransactionInfo.Log log) {
+  public static boolean isShieldedTRC20Log(TransactionInfo.Log log) {
     List<ByteString> topicsList = log.getTopicsList();
     byte[] topicsBytes = new byte[0];
     for (ByteString bs : topicsList) {
