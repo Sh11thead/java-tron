@@ -12,6 +12,7 @@ public class ShieldedTRC20TrackerTrigger extends Trigger {
   @Data
   public static class LogPojo {
 
+    private int type;
     private String address;
     private List<String> topics = new ArrayList<>();
     private String data;
@@ -23,6 +24,13 @@ public class ShieldedTRC20TrackerTrigger extends Trigger {
 
     private String txId;
     private String contractAddress;
+
+    private long energyFee;
+    private long energyUsage;
+    private long originEnergyUsage;
+    private long energyUsageTotal;
+    private long netFee;
+    private long netUsage;
     private List<LogPojo> LogList = new ArrayList<>();
 
   }

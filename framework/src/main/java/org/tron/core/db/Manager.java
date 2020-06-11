@@ -77,6 +77,7 @@ import org.tron.consensus.Consensus;
 import org.tron.consensus.base.Param.Miner;
 import org.tron.core.ChainBaseManager;
 import org.tron.core.Constant;
+import org.tron.core.Wallet;
 import org.tron.core.actuator.AbstractActuator;
 import org.tron.core.actuator.ActuatorCreator;
 import org.tron.core.capsule.AccountCapsule;
@@ -1866,26 +1867,10 @@ public class Manager {
               List<TransactionInfo> transactionInfos = parseTransactionInfoFromBlockDB(solidBlock);
               List<TransactionPojo> transactionPojos = new ArrayList<>();
               for (TransactionInfo info : transactionInfos) {
-                List<TransactionInfo.Log> logList = info.getLogList();
-                int index = 0;
-                List<LogPojo> logPojos = new ArrayList<>();
-                for (TransactionInfo.Log log : logList) {
-                  //if (Wallet.isShieldedTRC20Log(log)) {
-                  if (true) {
-                    index += 1;
-                    logPojos.add(toLogPojo(log));
-                  }
-                }
-                if (logPojos.size() > 0) {
-                  transactionPojos
-                      .add(toTransactionPojo(Hex.toHexString(info.getId().toByteArray()),
-                          WalletUtil.encode58Check(info.getContractAddress().toByteArray()),
-                          logPojos));
-                }
+                insertTransactionPojo(transactionPojos, info);
               }
               ShieldedTRC20SolidityTrackerCapsule shieldedTRC20SolidityTrackerCapsule = new ShieldedTRC20SolidityTrackerCapsule(
                   solidBlock, transactionPojos);
-
             }
           }
 
@@ -2063,13 +2048,30 @@ public class Manager {
   }
 
 
-  private static TransactionPojo toTransactionPojo(String txid, String contractAddress,
-      List<LogPojo> logPojos) {
-    TransactionPojo transactionPojo = new TransactionPojo();
-    transactionPojo.setTxId(txid);
-    transactionPojo.setContractAddress(contractAddress);
-    transactionPojo.setLogList(logPojos);
-    return transactionPojo;
+  private static void insertTransactionPojo(List<TransactionPojo> list,
+      TransactionInfo transactionInfo) {
+    List<TransactionInfo.Log> logList = transactionInfo.getLogList();
+    List<LogPojo> logPojos = new ArrayList<>();
+    for (TransactionInfo.Log log : logList) {
+      //if (Wallet.isShieldedTRC20Log(log)) {
+      if (true) {
+        logPojos.add(toLogPojo(log));
+      }
+    }
+    if (logPojos.size() > 0 && list != null) {
+      TransactionPojo transactionPojo = new TransactionPojo();
+      transactionPojo.setTxId(Hex.toHexString(transactionInfo.getId().toByteArray()));
+      transactionPojo.setContractAddress(
+          WalletUtil.encode58Check(transactionInfo.getContractAddress().toByteArray()));
+      transactionPojo.setLogList(logPojos);
+      transactionPojo.setEnergyFee(transactionInfo.getReceipt().getEnergyFee());
+      transactionPojo.setEnergyUsage(transactionInfo.getReceipt().getEnergyUsage());
+      transactionPojo.setEnergyUsageTotal(transactionInfo.getReceipt().getEnergyUsageTotal());
+      transactionPojo.setOriginEnergyUsage(transactionInfo.getReceipt().getOriginEnergyUsage());
+      transactionPojo.setNetFee(transactionInfo.getReceipt().getNetFee());
+      transactionPojo.setNetUsage(transactionInfo.getReceipt().getNetUsage());
+      list.add(transactionPojo);
+    }
   }
 
 
@@ -2077,9 +2079,12 @@ public class Manager {
     LogPojo ret = new LogPojo();
     ret.setAddress(WalletUtil.encode58Check(log.getAddress().toByteArray()));
     ret.setData(Hex.toHexString(log.getData().toByteArray()));
+    ret.setType(Wallet.getShieldedTRC20LogType(log.getTopicsList()));
     for (ByteString b : log.getTopicsList()) {
       ret.getTopics().add(Hex.toHexString(b.toByteArray()));
     }
     return ret;
   }
+
+
 }
