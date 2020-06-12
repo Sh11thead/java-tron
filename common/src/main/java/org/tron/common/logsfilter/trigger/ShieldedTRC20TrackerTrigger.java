@@ -24,6 +24,7 @@ public class ShieldedTRC20TrackerTrigger extends Trigger {
 
     private String txId;
     private String contractAddress;
+    private String inputData;
 
     private long energyFee;
     private long energyUsage;
@@ -41,11 +42,17 @@ public class ShieldedTRC20TrackerTrigger extends Trigger {
 
   private String blockHash;
 
+  private Boolean solidity = false;
+
   private List<TransactionPojo> transactionList = new ArrayList<>();
 
 
   public ShieldedTRC20TrackerTrigger() {
     super();
+    setTriggerName(Trigger.SHIELDED_TRC20TRACKER_TRIGGER_NAME);
+  }
+
+  public void solidityType() {
     setTriggerName(Trigger.SHIELDED_TRC20SOLIDITYTRACKER_TRIGGER_NAME);
   }
 

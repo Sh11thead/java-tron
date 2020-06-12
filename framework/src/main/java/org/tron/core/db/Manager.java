@@ -52,6 +52,7 @@ import org.tron.common.logsfilter.capsule.BlockErasedTriggerCapsule;
 import org.tron.common.logsfilter.capsule.BlockLogTriggerCapsule;
 import org.tron.common.logsfilter.capsule.ContractTriggerCapsule;
 import org.tron.common.logsfilter.capsule.ShieldedTRC20SolidityTrackerCapsule;
+import org.tron.common.logsfilter.capsule.ShieldedTRC20TrackerCapsule;
 import org.tron.common.logsfilter.capsule.SolidityTriggerCapsule;
 import org.tron.common.logsfilter.capsule.TRC20SolidityTrackerCapsule;
 import org.tron.common.logsfilter.capsule.TRC20TrackerCapsule;
@@ -84,6 +85,7 @@ import org.tron.core.capsule.AccountCapsule;
 import org.tron.core.capsule.BlockCapsule;
 import org.tron.core.capsule.BlockCapsule.BlockId;
 import org.tron.core.capsule.BytesCapsule;
+import org.tron.core.capsule.ContractCapsule;
 import org.tron.core.capsule.ExchangeCapsule;
 import org.tron.core.capsule.TransactionCapsule;
 import org.tron.core.capsule.TransactionInfoCapsule;
@@ -151,8 +153,10 @@ import org.tron.core.utils.TransactionRegister;
 import org.tron.protos.Protocol.AccountType;
 import org.tron.protos.Protocol.Transaction;
 import org.tron.protos.Protocol.Transaction.Contract;
+import org.tron.protos.Protocol.Transaction.Contract.ContractType;
 import org.tron.protos.Protocol.TransactionInfo;
 import org.tron.protos.Protocol.TransactionInfo.Log;
+import org.tron.protos.contract.SmartContractOuterClass.TriggerSmartContract;
 
 
 @Slf4j(topic = "DB")
@@ -1837,11 +1841,17 @@ public class Manager {
 
 
   private void postTRC20Trigger(BlockCapsule blockCapsule) {
-    if (eventPluginLoaded && EventPluginLoader.getInstance().isTrc20TrackerTriggerEnable()) {
+    if (eventPluginLoaded &&
+        EventPluginLoader.getInstance().isTrc20TrackerTriggerEnable()) {
       TRC20TrackerCapsule trc20TrackerCapsule = new TRC20TrackerCapsule(blockCapsule);
       if (trc20TrackerCapsule.getTrc20TrackerTrigger() != null) {
         trc20TrackerCapsule.processTrigger();
       }
+
+    } else if (eventPluginLoaded &&
+        EventPluginLoader.getInstance().isShieldedTRC20TrackerTriggerEnable()) {
+      ShieldedTRC20TrackerCapsule shieldedTRC20TrackerCapsule = new ShieldedTRC20TrackerCapsule(
+          blockCapsule, getTransactionPojos(blockCapsule));
     }
   }
 
@@ -1862,15 +1872,9 @@ public class Manager {
                   solidBlock, null);
               trc20SolidityTrackerCapsule.processTrigger();
             }
-
             if (EventPluginLoader.getInstance().isShieldedTRC20TrackerSolidityTriggerEnable()) {
-              List<TransactionInfo> transactionInfos = parseTransactionInfoFromBlockDB(solidBlock);
-              List<TransactionPojo> transactionPojos = new ArrayList<>();
-              for (TransactionInfo info : transactionInfos) {
-                insertTransactionPojo(transactionPojos, info);
-              }
-              ShieldedTRC20SolidityTrackerCapsule shieldedTRC20SolidityTrackerCapsule = new ShieldedTRC20SolidityTrackerCapsule(
-                  solidBlock, transactionPojos);
+              ShieldedTRC20SolidityTrackerCapsule shieldedTRC20SolidityTrackerCapsule =
+                  new ShieldedTRC20SolidityTrackerCapsule(solidBlock);
             }
           }
 
@@ -1984,6 +1988,14 @@ public class Manager {
     return ret;
   }
 
+  private Map<ByteString, byte[]> parseTransactionInputDataFromBlockDB(BlockCapsule blockCapsule) {
+    Map<ByteString, byte[]> ret = new HashMap<>();
+    for (TransactionCapsule capsule : blockCapsule.getTransactions()) {
+      ret.put(capsule.getTransactionId().getByteString(), getTriggerDataFromTransaction(capsule));
+    }
+    return ret;
+  }
+
   private List<TransactionInfo> parseTransactionInfoFromBlockDB(BlockCapsule blockCapsule) {
     List<TransactionInfo> ret = new ArrayList<>();
     Map<ByteString, TransactionInfo> retMap = new HashMap<>();
@@ -2049,11 +2061,11 @@ public class Manager {
 
 
   private static void insertTransactionPojo(List<TransactionPojo> list,
-      TransactionInfo transactionInfo) {
+      TransactionInfo transactionInfo, Map<ByteString, byte[]> inputDataMap) {
     List<TransactionInfo.Log> logList = transactionInfo.getLogList();
     List<LogPojo> logPojos = new ArrayList<>();
     for (TransactionInfo.Log log : logList) {
-      //if (Wallet.isShieldedTRC20Log(log)) {
+      //if (Wallet.getShieldedTRC20LogType(log.getTopicsList())!= 0) {
       if (true) {
         logPojos.add(toLogPojo(log));
       }
@@ -2070,6 +2082,10 @@ public class Manager {
       transactionPojo.setOriginEnergyUsage(transactionInfo.getReceipt().getOriginEnergyUsage());
       transactionPojo.setNetFee(transactionInfo.getReceipt().getNetFee());
       transactionPojo.setNetUsage(transactionInfo.getReceipt().getNetUsage());
+      byte[] inputData = inputDataMap.get(transactionInfo.getId());
+      if (inputData != null) {
+        transactionPojo.setInputData(Hex.toHexString(inputData));
+      }
       list.add(transactionPojo);
     }
   }
@@ -2077,14 +2093,47 @@ public class Manager {
 
   private static LogPojo toLogPojo(TransactionInfo.Log log) {
     LogPojo ret = new LogPojo();
+    ret.setType(Wallet.getShieldedTRC20LogType(log.getTopicsList()));
     ret.setAddress(WalletUtil.encode58Check(log.getAddress().toByteArray()));
     ret.setData(Hex.toHexString(log.getData().toByteArray()));
-    ret.setType(Wallet.getShieldedTRC20LogType(log.getTopicsList()));
     for (ByteString b : log.getTopicsList()) {
       ret.getTopics().add(Hex.toHexString(b.toByteArray()));
     }
     return ret;
   }
 
+  private static byte[] getTriggerDataFromTransaction(TransactionCapsule transactionCapsule) {
+    ContractType contractType = transactionCapsule.getInstance().getRawData().getContract(0)
+        .getType();
+    switch (contractType.getNumber()) {
+      case ContractType.TriggerSmartContract_VALUE: {
+        TriggerSmartContract contract = ContractCapsule
+            .getTriggerContractFromTransaction(transactionCapsule.getInstance());
+        if (contract != null) {
+          return contract.getData().toByteArray();
+        }
+      }
+      //IGNORE CREATE
+/*      case ContractType.CreateSmartContract_VALUE:
+      {
+        CreateSmartContract contract = ContractCapsule.getSmartContractFromTransaction(transactionCapsule.getInstance());
+        if(contract!=null){
+          return contract.getNewContract().getBytecode().toByteArray();
+        }
+      }*/
+      default:
+        return null;
+    }
+  }
+
+  private List<TransactionPojo> getTransactionPojos(BlockCapsule blockCapsule) {
+    List<TransactionPojo> transactionPojos = new ArrayList<>();
+    List<TransactionInfo> transactionInfos = parseTransactionInfoFromBlockDB(blockCapsule);
+    Map<ByteString, byte[]> inputMap = parseTransactionInputDataFromBlockDB(blockCapsule);
+    for (TransactionInfo info : transactionInfos) {
+      insertTransactionPojo(transactionPojos, info, inputMap);
+    }
+    return transactionPojos;
+  }
 
 }

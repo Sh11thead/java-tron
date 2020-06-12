@@ -16,6 +16,7 @@ import org.tron.common.logsfilter.trigger.BlockErasedTrigger;
 import org.tron.common.logsfilter.trigger.BlockLogTrigger;
 import org.tron.common.logsfilter.trigger.ContractEventTrigger;
 import org.tron.common.logsfilter.trigger.ContractLogTrigger;
+import org.tron.common.logsfilter.trigger.ShieldedTRC20TrackerTrigger;
 import org.tron.common.logsfilter.trigger.SolidityTrigger;
 import org.tron.common.logsfilter.trigger.TRC20TrackerTrigger;
 import org.tron.common.logsfilter.trigger.TransactionLogTrigger;
@@ -53,6 +54,8 @@ public class EventPluginLoader {
   private boolean trc20TrackerSolidityTriggerEnable = false;
 
   private boolean blockErasedTriggerEnable = false;
+
+  private boolean shieldedTRC20TrackerTriggerEnable = false;
 
   private boolean shieldedTRC20TrackerSolidityTriggerEnable = false;
 
@@ -244,6 +247,16 @@ public class EventPluginLoader {
       if (!useNativeQueue) {
         setPluginTopic(Trigger.SHIELDED_TRC20SOLIDITYTRACKER_TRIGGER, triggerConfig.getTopic());
       }
+    } else if (EventPluginConfig.SHIELDED_TRC20_TRACKER
+        .equalsIgnoreCase(triggerConfig.getTriggerName())) {
+      if (triggerConfig.isEnabled()) {
+        shieldedTRC20TrackerTriggerEnable = true;
+      } else {
+        shieldedTRC20TrackerTriggerEnable = false;
+      }
+      if (!useNativeQueue) {
+        setPluginTopic(Trigger.SHIELDED_TRC20TRACKER_TRIGGER, triggerConfig.getTopic());
+      }
     }
   }
 
@@ -292,6 +305,11 @@ public class EventPluginLoader {
   public synchronized boolean isShieldedTRC20TrackerSolidityTriggerEnable() {
     return shieldedTRC20TrackerSolidityTriggerEnable;
   }
+
+  public synchronized boolean isShieldedTRC20TrackerTriggerEnable() {
+    return shieldedTRC20TrackerTriggerEnable;
+  }
+
 
   private void setPluginTopic(int eventType, String topic) {
     eventListeners.forEach(listener -> listener.setTopic(eventType, topic));
@@ -408,6 +426,16 @@ public class EventPluginLoader {
     } else {
       eventListeners.forEach(listener ->
           listener.handleTRC20Event(toJsonString(trigger)));
+    }
+  }
+
+  public void postShieldedTRC20TrackerTrigger(ShieldedTRC20TrackerTrigger trigger) {
+    if (useNativeQueue) {
+      NativeMessageQueue.getInstance()
+          .publishTrigger(toJsonString(trigger), trigger.getTriggerName());
+    } else {
+      eventListeners.forEach(listener ->
+          listener.handleShieldedTRC20Event(toJsonString(trigger)));
     }
   }
 

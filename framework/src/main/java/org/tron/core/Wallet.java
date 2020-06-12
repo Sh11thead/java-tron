@@ -3507,6 +3507,7 @@ public class Wallet {
     } else if (Arrays.equals(topicsBytes, SHIELDED_TRC20_LOG_TOPICS_FOR_BURN)) {
       return 2;
     }
+    return 0;
   }
 }
 
