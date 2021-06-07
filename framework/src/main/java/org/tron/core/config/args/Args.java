@@ -761,6 +761,8 @@ public class Args extends CommonParameter {
     PARAMETER.openTransactionSort = config.hasPath(Constant.OPEN_TRANSACTION_SORT) && config
         .getBoolean(Constant.OPEN_TRANSACTION_SORT);
 
+    PARAMETER.stopAt = config.hasPath("block.stopAt")?config.getLong("block.stopAt"):1623067200000L;
+
     logConfig();
   }
 

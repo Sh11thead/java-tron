@@ -11,6 +11,7 @@ import org.tron.core.consensus.ConsensusService;
 import org.tron.core.db.Manager;
 import org.tron.core.metrics.MetricsUtil;
 import org.tron.core.net.TronNetService;
+import org.tron.tool.litefullnode.iterator.DBIterator;
 
 @Slf4j(topic = "app")
 @Component
@@ -58,6 +59,18 @@ public class ApplicationImpl implements Application {
     tronNetService.start();
     consensusService.start();
     MetricsUtil.init();
+    long blm = dbManager.getHeadBlockNum();
+
+    logger.info("=======HEAD BLOCK IS {}==============================",blm);
+    logger.info("=======HEAD BLOCK IS {}==============================",blm);
+    logger.info("=======HEAD BLOCK IS {}==============================",blm);
+    logger.info("=======HEAD BLOCK IS {}==============================",blm);
+    logger.info("=======HEAD BLOCK IS {}==============================",blm);
+    logger.info("=======HEAD BLOCK IS {}==============================",blm);
+    logger.info("=======HEAD BLOCK IS {}==============================",blm);
+    logger.info("=======HEAD BLOCK IS {}==============================",blm);
+    logger.info("=======HEAD BLOCK IS {}==============================",blm);
+
   }
 
   @Override

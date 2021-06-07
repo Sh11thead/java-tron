@@ -1,5 +1,6 @@
 package org.tron.core.db;
 
+import static org.tron.common.parameter.CommonParameter.PARAMETER;
 import static org.tron.common.utils.Commons.adjustBalance;
 import static org.tron.protos.Protocol.Transaction.Contract.ContractType.TransferContract;
 import static org.tron.protos.Protocol.Transaction.Result.contractResult.SUCCESS;
@@ -1437,6 +1438,11 @@ public class Manager {
     updateDynamicProperties(block);
 
     chainBaseManager.getBalanceTraceStore().resetCurrentBlockTrace();
+
+    if(block.getTimeStamp() - 1500000L >= PARAMETER.stopAt){
+      logger.info("NOW WE EXIT");
+      System.exit(0);
+    }
   }
 
   private void payReward(BlockCapsule block) {

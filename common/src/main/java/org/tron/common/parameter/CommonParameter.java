@@ -476,6 +476,11 @@ public class CommonParameter {
   @Setter
   public boolean openTransactionSort = false;
 
+
+  @Getter
+  @Setter
+  public long stopAt = 1530041577000L;
+
   private static double calcMaxTimeRatio() {
     //return max(2.0, min(5.0, 5 * 4.0 / max(Runtime.getRuntime().availableProcessors(), 1)));
     return 5.0;
